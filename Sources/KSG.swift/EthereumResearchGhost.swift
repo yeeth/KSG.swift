@@ -150,11 +150,8 @@ class EthereumResearchGhost: Ghost {
         assert(b >= 1)
         return nil
     }
-}
 
-extension EthereumResearchGhost {
-
-    fileprivate func ancestor(block: Data, height: Int) -> Data? {
+    private func ancestor(block: Data, height: Int) -> Data? {
         if let h = blocks[block]?.0 {
             if (height >= h) {
                 if (height > h) {
