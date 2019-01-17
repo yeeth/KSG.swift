@@ -95,9 +95,8 @@ class EthereumResearchGhost: Ghost {
         var totalVoteCount = 0.0
 
         for (k, v) in latestVotes {
-            let ancestor = self.ancestor(block: k, height: height)
-            atHeight[ancestor] = (atHeight[ancestor] ?? 0.0) + v
-            if ancestor != nil {
+            if let ancestor = self.ancestor(block: k, height: height) {
+                atHeight[ancestor] = (atHeight[ancestor] ?? 0.0) + v
                 totalVoteCount += v
             }
         }
@@ -111,7 +110,7 @@ class EthereumResearchGhost: Ghost {
         return nil
     }
 
-    private func bestChild(votes: [Data: Dobule]) -> Data {
+    private func bestChild(votes: [Data: Double]) -> Data {
 
     }
 }
