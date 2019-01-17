@@ -3,7 +3,7 @@ import Foundation
 class EthereumResearchGhost: Ghost {
 
     let NODE_COUNT = 131072
-    let balances = Array(repeating: 1, count: 131072)
+    let balances = Array(repeating: 1.0, count: 131072)
     var latestMessage = Array(repeating: Data(repeating: 0, count: 32), count: 131072)
     let maxKnownHeight = [0]
     var children = [Data:[Data]]()
@@ -19,9 +19,9 @@ class EthereumResearchGhost: Ghost {
     }
 
     func head() -> Data {
-        var latestVotes = [Data:Int]()
+        var latestVotes = [Data:Double]()
         for (i, balance) in balances.enumerated() {
-            latestVotes[latestMessage[i]] = (latestVotes[latestMessage[i]] ?? 0) + balance
+            latestVotes[latestMessage[i]] = (latestVotes[latestMessage[i]] ?? 0.0) + balance
         }
 
         var head = Data(repeating: 0, count: 32)
@@ -48,7 +48,7 @@ class EthereumResearchGhost: Ghost {
             } else if c.count == 1 {
                 head = c[0]
             } else {
-                var childVotes = [Data:Int]() // @todo
+                var childVotes = [Data:Double]() // @todo
                 for (k, v) in latestVotes {
                     if let child = ancestor(block: k, height: height + 1) {
                         childVotes[child] = (childVotes[child] ?? 0) + v
@@ -86,18 +86,20 @@ class EthereumResearchGhost: Ghost {
         // @todo
     }
 
-    private func clearWinner(latestVotes: [Data:Int], height: Int) -> Data? {
-        var atHeight = [Data:Int]()
-        let totalVoteCount = 0
+    private func clearWinner(latestVotes: [Data:Double], height: Int) -> Data? {
+        var atHeight = [Data:Double]()
+        var totalVoteCount = 0.0
 
         for (k, v) in latestVotes {
             let ancestor = self.ancestor(block: k, height: height)
-            atHeight[ancestor] = (atHeight[ancestor] ?? 0) + v
-            // @todo figure out next part
+            atHeight[ancestor] = (atHeight[ancestor] ?? 0.0) + v
+            if ancestor != nil {
+                totalVoteCount += v
+            }
         }
 
         for (k, v) in atHeight {
-            if v >= totalVoteCount / 2 {
+            if v >= Double(totalVoteCount / 2) {
                 return k
             }
         }
@@ -105,7 +107,7 @@ class EthereumResearchGhost: Ghost {
         return nil
     }
 
-    private func bestChild(votes: [Data: Int]) -> Data {
+    private func bestChild(votes: [Data: Dobule]) -> Data {
 
     }
 }
