@@ -33,9 +33,21 @@ class EthereumResearchGhost: Ghost {
                 return head
             }
 
-            let step = powerOfTwo(below: maxKnownHeight[0] - height) / 2
+            var step = powerOfTwo(below: maxKnownHeight[0] - height) / 2
             while step > 0 {
+                if let possibleClearWinner = clearWinner(latestVotes: latestVotes, height: height - (height % step) + step) {
+                    head = possibleClearWinner
+                    break
+                }
 
+                step /= 2
+                if step > 0 {
+                    continue
+                } else if c.count == 1 {
+                    head = c[0]
+                } else {
+                    // @todo
+                }
             }
         }
 
@@ -52,5 +64,28 @@ class EthereumResearchGhost: Ghost {
 
     private func addAttestation(block: Data, validatorIndex: Int) {
         latestMessage[validatorIndex] = block
+    }
+
+    private func ancestor(block: Data, height: Int) -> Data {
+        // @todo
+    }
+
+    private func clearWinner(latestVotes: [Data:Int], height: Int) -> Data? {
+        var atHeight = [Data:Int]()
+        let totalVoteCount = 0
+
+        for (k, v) in latestVotes {
+            let ancestor = self.ancestor(block: k, height: height)
+            atHeight[ancestor] = (atHeight[ancestor] ?? 0) + v
+            // @todo figure out next part
+        }
+
+        for (k, v) in atHeight {
+            if v >= totalVoteCount / 2 {
+                return k
+            }
+        }
+
+        return nil
     }
 }
