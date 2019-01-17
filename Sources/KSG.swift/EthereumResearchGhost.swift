@@ -4,9 +4,11 @@ class EthereumResearchGhost: Ghost {
 
     let NODE_COUNT = 131072
     let balances = Array(repeating: 1, count: 131072)
-    let latestMessage = Array(repeating: Data(repeating: 0, count: 32), count: 131072)
+    var latestMessage = Array(repeating: Data(repeating: 0, count: 32), count: 131072)
     let maxKnownHeight = [0]
     var children = [Data:[Data]]()
+
+    var blocks = [Data:(Int, Data)]()
 
     var logz = [Int]()
 
@@ -40,7 +42,15 @@ class EthereumResearchGhost: Ghost {
         return head
     }
 
-    func powerOfTwo(below: Int) -> Int {
+    private func powerOfTwo(below: Int) -> Int {
         return 2^logz[below]
+    }
+
+    private func height(_ block: Data) -> Int {
+        return (blocks[block]?.0)!
+    }
+
+    private func addAttestation(block: Data, validatorIndex: Int) {
+        latestMessage[validatorIndex] = block
     }
 }
