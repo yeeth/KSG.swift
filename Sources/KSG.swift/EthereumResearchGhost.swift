@@ -60,7 +60,7 @@ class EthereumResearchGhost: Ghost {
 
             height = self.height(head)
             let votes = latestVotes
-            for (k, v) in votes {
+            for (k, _) in votes {
                 if ancestor(block: k, height: height) != head {
                     latestVotes.removeValue(forKey: k)
                 }
