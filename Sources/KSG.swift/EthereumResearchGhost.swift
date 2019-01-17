@@ -12,6 +12,10 @@ class EthereumResearchGhost: Ghost {
 
     var logz = [Int]()
 
+    var cache = [Data:Data]()
+    var heightToBytes = [Data]() // @todo
+    var ancestors = [[Data:Data]]()
+
     init() {
         for i in 2...1000 {
             logz[i] = logz[i / 2] + 1
@@ -86,10 +90,6 @@ class EthereumResearchGhost: Ghost {
         latestMessage[validatorIndex] = block
     }
 
-    private func ancestor(block: Data, height: Int) -> Data? {
-        // @todo
-    }
-
     private func clearWinner(latestVotes: [Data:Double], height: Int) -> Data? {
         var atHeight = [Data:Double]()
         var totalVoteCount = 0.0
@@ -148,6 +148,32 @@ class EthereumResearchGhost: Ghost {
         }
 
         assert(b >= 1)
+        return nil
+    }
+}
+
+extension EthereumResearchGhost {
+
+    fileprivate func ancestor(block: Data, height: Int) -> Data? {
+        if let h = blocks[block]?.0 {
+            if (height >= h) {
+                if (height > h) {
+                    return nil
+                }
+
+                return block
+            }
+
+            let cachekey = block + heightToBytes[height]
+            if let data = cache[cachekey] {
+                return data
+            }
+
+            let o = ancestor(block: ancestors[logz[h - height - 1]][block]!, height: height)
+            cache[cachekey] = o
+            return o
+        }
+
         return nil
     }
 }
