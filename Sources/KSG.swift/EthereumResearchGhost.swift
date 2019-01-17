@@ -148,5 +148,6 @@ class EthereumResearchGhost: Ghost {
         }
 
         assert(b >= 1)
+        return nil
     }
 }
