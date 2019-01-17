@@ -58,7 +58,7 @@ class EthereumResearchGhost: Ghost {
                         childVotes[child] = (childVotes[child] ?? 0) + v
                     }
 
-                    head = bestChild(votes: childVotes)
+                    head = bestChild(votes: childVotes)!
                 }
             }
 
@@ -110,7 +110,43 @@ class EthereumResearchGhost: Ghost {
         return nil
     }
 
-    private func bestChild(votes: [Data: Double]) -> Data {
+    private func bestChild(votes: [Data: Double]) -> Data? {
+        var bitmask = 0
+        var b = 0
 
+        for bit in stride(from: 255, to: -1, by: -1) {
+            b = bit
+            var zeroVotes = 0.0
+            var oneVotes = 0.0
+            var singleCandidate: Data?
+
+            for (candidate, votesForCandidate) in votes {
+                let candidateAsInt = candidate.withUnsafeBytes { (ptr: UnsafePointer<Int>) -> Int in
+                    return ptr.pointee
+                }
+
+                if candidateAsInt >> (bit+1) != bitmask {
+                    continue
+                }
+
+                if (candidateAsInt >> bit) % 2 == 0 {
+                    zeroVotes += votesForCandidate
+                } else {
+                    oneVotes += votesForCandidate
+                }
+
+                if singleCandidate == nil {
+                    singleCandidate = candidate
+                    break // @todo I think we can do this
+                }
+            }
+
+            bitmask = (bitmask * 2) + (oneVotes > zeroVotes ? 1 : 0)
+            if singleCandidate != nil {
+                return singleCandidate
+            }
+        }
+
+        assert(b >= 1)
     }
 }
