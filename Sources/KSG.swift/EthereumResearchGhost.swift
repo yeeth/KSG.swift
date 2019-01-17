@@ -41,12 +41,21 @@ class EthereumResearchGhost: Ghost {
                 }
 
                 step /= 2
-                if step > 0 {
-                    continue
-                } else if c.count == 1 {
-                    head = c[0]
-                } else {
-                    // @todo
+            }
+
+            if step > 0 {
+                continue
+            } else if c.count == 1 {
+                head = c[0]
+            } else {
+                // @todo
+            }
+
+            height = self.height(head)
+            let votes = latestVotes
+            for (k, v) in votes {
+                if ancestor(block: k, height: height) != head {
+                    latestVotes.remove(at: k)
                 }
             }
         }
