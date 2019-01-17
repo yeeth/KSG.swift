@@ -48,7 +48,14 @@ class EthereumResearchGhost: Ghost {
             } else if c.count == 1 {
                 head = c[0]
             } else {
-                // @todo
+                var childVotes = [Data:Int]() // @todo
+                for (k, v) in latestVotes {
+                    if let child = ancestor(block: k, height: height + 1) {
+                        childVotes[child] = (childVotes[child] ?? 0) + v
+                    }
+
+                    head = bestChild(votes: childVotes)
+                }
             }
 
             height = self.height(head)
@@ -75,7 +82,7 @@ class EthereumResearchGhost: Ghost {
         latestMessage[validatorIndex] = block
     }
 
-    private func ancestor(block: Data, height: Int) -> Data {
+    private func ancestor(block: Data, height: Int) -> Data? {
         // @todo
     }
 
@@ -96,5 +103,9 @@ class EthereumResearchGhost: Ghost {
         }
 
         return nil
+    }
+
+    private func bestChild(votes: [Data: Int]) -> Data {
+
     }
 }
