@@ -48,7 +48,11 @@ class EthereumResearchGhost: Ghost {
             } else if c.count == 1 {
                 head = c[0]
             } else {
-                var childVotes = [Data:Double]() // @todo
+                var childVotes = [Data:Double]()
+                for x in c {
+                    childVotes[x] = 0.1
+                }
+
                 for (k, v) in latestVotes {
                     if let child = ancestor(block: k, height: height + 1) {
                         childVotes[child] = (childVotes[child] ?? 0) + v
