@@ -62,7 +62,7 @@ class EthereumResearchGhost: Ghost {
             let votes = latestVotes
             for (k, v) in votes {
                 if ancestor(block: k, height: height) != head {
-                    latestVotes.remove(at: k)
+                    latestVotes.removeValue(forKey: k)
                 }
             }
         }
