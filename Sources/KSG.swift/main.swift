@@ -4,9 +4,20 @@ let g = EthereumResearchGhost()
 
 let startTime = CFAbsoluteTimeGetCurrent()
 var phead: Data = Data(capacity: 32)
+
 for i in stride(from: 0, to: 131072, by: 1024) {
+
+    let ghostStart = CFAbsoluteTimeGetCurrent()
     let head = g.head()
-    for _ in stride(from: i, to: i + g.NODE_COUNT, by: 1) {
+    let ghostTime = CFAbsoluteTimeGetCurrent() - ghostStart
+    print(
+        NSString(
+            format: "Ran ghost in: %.5f",
+            ghostTime
+        )
+    )
+
+    for _ in i..<(i + g.NODE_COUNT) {
         phead = g.getPerturbedHead(h: head)
         g.addAttestations(block: phead, v: Int(fmod(Double(i), Double(g.NODE_COUNT))))
     }
