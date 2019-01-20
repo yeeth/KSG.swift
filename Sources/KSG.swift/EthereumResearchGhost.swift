@@ -21,7 +21,6 @@ class EthereumResearchGhost: Ghost {
 
         blocks[(Data(capacity: 32)).hashValue] = (0, Data(capacity: 0))
 
-
         for _ in 0..<16 {
             ancestors.append([Data(capacity: 32).hashValue: Data(capacity: 32)])
         }
@@ -54,14 +53,15 @@ class EthereumResearchGhost: Ghost {
                 return head
             }
 
-            var step = powerOfTwo(below: maxKnownHeight[0] - height) / 2
+            var step = Int(floor(Double(powerOfTwo(below: maxKnownHeight[0] - height)) / 2.0))
             while step > 0 {
                 if let possibleClearWinner = clearWinner(latestVotes: latestVotes, height: height - (height % step) + step) {
                     head = possibleClearWinner
                     break
                 }
 
-                step /= 2
+                let d = Double(step) / 2
+                step = Int(floor(d))
             }
 
             if step > 0 {
@@ -71,16 +71,16 @@ class EthereumResearchGhost: Ghost {
             } else {
                 var childVotes = [Data: Double]()
                 for x in c {
-                    childVotes[x] = 0.1
+                    childVotes[x] = 0.01
                 }
 
                 for (k, v) in latestVotes {
                     if let child = ancestor(block: k, height: height + 1) {
                         childVotes[child] = (childVotes[child] ?? 0) + v
                     }
-
-                    head = bestChild(votes: childVotes)!
                 }
+
+                head = bestChild(votes: childVotes)!
             }
 
             height = self.height(head)
@@ -91,8 +91,6 @@ class EthereumResearchGhost: Ghost {
                 }
             }
         }
-
-        return head
     }
 
     private func powerOfTwo(below: Int) -> Int {
