@@ -15,7 +15,7 @@ for i in stride(from: 0, to: 131072, by: 1024) {
     print(
         NSString(
             format: "Adding new block on top of block %d, Time: %.5f",
-            (g.blocks[phead]?.0 ?? 0),
+            (g.blocks[phead.hashValue]?.0 ?? 0),
             timeElapsed
         )
     )
