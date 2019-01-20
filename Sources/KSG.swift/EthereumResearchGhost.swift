@@ -21,16 +21,16 @@ class EthereumResearchGhost: Ghost {
 
         blocks[Data(capacity: 32)] = (0, Data(capacity: 0))
 
-        for _ in 0...15 {
+        for _ in 0..<16 {
             ancestors.append([Data(capacity: 32): Data(capacity: 32)])
         }
 
-        for i in 0...9999 {
+        for i in 0..<10000 {
             var num = i
             heightToBytes.append(Data(bytes: &num, count: MemoryLayout<Int>.size))
         }
 
-        for i in 2...9999 {
+        for i in 2..<10000 {
             logz.append(logz[i / 2] + 1)
         }
     }
@@ -238,7 +238,7 @@ class EthereumResearchGhost: Ghost {
 
         children[parent]?.append(newHash)
 
-        for i in 0...15 {
+        for i in 0..<16 {
             if h == 0 {
                 ancestors.insert([newHash: Data(count: 32)], at: i)
                 continue
