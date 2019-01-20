@@ -3,6 +3,7 @@ import Foundation
 class EthereumResearchGhost: Ghost {
 
     let NODE_COUNT = 131072
+    let LATENCY_FACTOR = 0.5
     let balances = Array(repeating: 1.0, count: 131072)
     var latestMessage = Array(repeating: Data(repeating: 0, count: 32), count: 131072)
     var maxKnownHeight = [0]
@@ -202,14 +203,12 @@ class EthereumResearchGhost: Ghost {
         var head = h
         var upcount = 0
 
-        var foo = 0
-        while height(head) > 0 && foo < 10 {
+        while height(head) > 0 && Double.random(in: 0.0...1.0) < LATENCY_FACTOR {
             head = blocks[head]!.1
             upcount += 1
-            foo += 1
         }
 
-        for _ in 0...Int.random(in: 0..<10) {
+        for _ in 0...Int.random(in: 0...(upcount + 1)) {
             if let c = children[head] {
                 if let sh = c.randomElement() {
                     head = sh
@@ -225,14 +224,13 @@ class EthereumResearchGhost: Ghost {
     }
 
     func addBlock(parent: Data) {
-        var keyData = Data(count: 32)
+        var bytes = [UInt8](repeating: 0, count: 32)
+        SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) // @todo check status
 
-        var result = keyData.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, 64, $0)
-        }
+        let newHash = Data(bytes: bytes, count: bytes.count)
 
-        let newHash = Data(bytes: &result, count: MemoryLayout<Int>.size)
         let h = height(parent)
+
         blocks[newHash] = (h+1, parent)
         if let _ = children[parent] {
         } else {
@@ -240,6 +238,7 @@ class EthereumResearchGhost: Ghost {
         }
 
         children[parent]?.append(newHash)
+
         for i in 0...1 {
             if h == 0 {
                 ancestors.insert([newHash:Data(count: 32)], at: i)
@@ -254,6 +253,6 @@ class EthereumResearchGhost: Ghost {
         }
 
         maxKnownHeight[0] = max(maxKnownHeight[0], h+1)
-
     }
 }
+
