@@ -5,30 +5,46 @@ class EthereumResearchGhost: Ghost {
     let NODE_COUNT = 131072
     let balances = Array(repeating: 1.0, count: 131072)
     var latestMessage = Array(repeating: Data(repeating: 0, count: 32), count: 131072)
-    let maxKnownHeight = [0]
+    var maxKnownHeight = [0]
     var children = [Data:[Data]]()
 
     var blocks = [Data:(Int, Data)]()
 
-    var logz = [Int]()
+    var logz = [0, 0]
 
     var cache = [Data:Data]()
-    var heightToBytes = [Data]() // @todo
+    var heightToBytes = [Data]()
     var ancestors = [[Data:Data]]()
 
     init() {
+
+        blocks[Data(capacity: 32)] = (0, Data(capacity: 0))
+
+        for _ in 0...16 {
+            ancestors.append([Data(capacity: 32):Data(capacity: 32)])
+
+        }
+
+        for i in 0...100 {
+            var num = i
+            heightToBytes.append(Data(bytes: &num, count: MemoryLayout<Int>.size))
+        }
+
         for i in 2...1000 {
-            logz[i] = logz[i / 2] + 1
+            logz.append(logz[i / 2] + 1)
         }
     }
 
     func head() -> Data {
+
         var latestVotes = [Data:Double]()
+
         for (i, balance) in balances.enumerated() {
             latestVotes[latestMessage[i]] = (latestVotes[latestMessage[i]] ?? 0.0) + balance
         }
 
         var head = Data(repeating: 0, count: 32)
+
         var height = 0
 
         while true {
@@ -83,7 +99,11 @@ class EthereumResearchGhost: Ghost {
     }
 
     private func height(_ block: Data) -> Int {
-        return (blocks[block]?.0)!
+        if let b = blocks[block] {
+            return b.0
+        }
+
+        return 0
     }
 
     private func addAttestation(block: Data, validatorIndex: Int) {
@@ -102,6 +122,10 @@ class EthereumResearchGhost: Ghost {
         }
 
         for (k, v) in atHeight {
+            if totalVoteCount == 0 {
+                return k
+            }
+
             if v >= Double(totalVoteCount / 2) {
                 return k
             }
@@ -172,5 +196,64 @@ class EthereumResearchGhost: Ghost {
         }
 
         return nil
+    }
+
+    func getPerturbedHead(h: Data) -> Data {
+        var head = h
+        var upcount = 0
+
+        var foo = 0
+        while height(head) > 0 && foo < 10 {
+            head = blocks[head]!.1
+            upcount += 1
+            foo += 1
+        }
+
+        for _ in 0...Int.random(in: 0..<10) {
+            if let c = children[head] {
+                if let sh = c.randomElement() {
+                    head = sh
+                }
+            }
+        }
+
+        return head
+    }
+
+    func addAttestations(block: Data, v: Int) {
+        latestMessage.insert(block, at: v)
+    }
+
+    func addBlock(parent: Data) {
+        var keyData = Data(count: 32)
+
+        var result = keyData.withUnsafeMutableBytes {
+            SecRandomCopyBytes(kSecRandomDefault, 64, $0)
+        }
+
+        let newHash = Data(bytes: &result, count: MemoryLayout<Int>.size)
+        let h = height(parent)
+        blocks[newHash] = (h+1, parent)
+        if let _ = children[parent] {
+        } else {
+            children[parent] = [Data]()
+        }
+
+        children[parent]?.append(newHash)
+        for i in 0...1 {
+            if h == 0 {
+                ancestors.insert([newHash:Data(count: 32)], at: i)
+                continue
+            }
+
+            if h % 2^i == 0 {
+                ancestors.insert([newHash:parent], at: i)
+            } else {
+                ancestors.insert([newHash:ancestors[i][parent]!], at: i)
+            }
+        }
+
+        maxKnownHeight[0] = max(maxKnownHeight[0], h+1)
+
     }
 }

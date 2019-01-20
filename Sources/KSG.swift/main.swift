@@ -25,7 +25,7 @@ class EFG {
 
     init() {
 
-        blocks[Data(capacity: 4)] = (0, Data(capacity: 0))
+        blocks[Data(capacity: 32)] = (0, Data(capacity: 0))
 
         for _ in 0...16 {
             ancestors.append([Data(capacity: 32):Data(capacity: 32)])
@@ -60,12 +60,7 @@ class EFG {
                 return head
             }
 
-            let power = powerOfTwo(below: maxKnownHeight[0] - height)
-            var step = 0
-            if power != 0 {
-                step = power / 2
-            }
-
+            var step = powerOfTwo(below: maxKnownHeight[0] - height) / 2
             while step > 0 {
                 if let possibleClearWinner = clearWinner(latestVotes: latestVotes, height: height - (height % step) + step) {
                     head = possibleClearWinner
@@ -219,9 +214,7 @@ class EFG {
             head = blocks[head]!.1
             upcount += 1
             foo += 1
-
         }
-
 
         for _ in 0...Int.random(in: 0..<10) {
             if let c = children[head] {
@@ -239,11 +232,10 @@ class EFG {
     }
 
     func addBlock(parent: Data) {
-
         var keyData = Data(count: 32)
 
         var result = keyData.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, 32, $0)
+            SecRandomCopyBytes(kSecRandomDefault, 64, $0)
         }
 
         let newHash = Data(bytes: &result, count: MemoryLayout<Int>.size)
@@ -277,14 +269,19 @@ class EFG {
 let g = EFG()
 
 let startTime = CFAbsoluteTimeGetCurrent()
-for i in stride(from: 0, to: g.NODE_COUNT, by: 1024) {
+for i in stride(from: 0, to: 131072, by: 1024) {
     let head = g.head()
     for _ in i...(i + g.NODE_COUNT) {
         let phead = g.getPerturbedHead(h: head)
         g.addAttestations(block: phead, v: i % g.NODE_COUNT)
-        g.addBlock(parent: phead)
         let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-        print("Time elapsed: \(timeElapsed) s.")
-        break
+        print(
+            NSString(
+                format: "Adding new block on top of block %d, Time: %.5f",
+                (g.blocks[phead]?.0 ?? 0),
+                timeElapsed
+            )
+        )
+        g.addBlock(parent: phead)
     }
 }
