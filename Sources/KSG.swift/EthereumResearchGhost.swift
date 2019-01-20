@@ -207,7 +207,7 @@ class EthereumResearchGhost: Ghost {
             upcount += 1
         }
 
-        for _ in 0...Int.random(in: 0...(upcount + 1)) {
+        for _ in 0...Int.random(in: 0..<(upcount + 1)) {
             if let c = children[head] {
                 if let sh = c.randomElement() {
                     head = sh
