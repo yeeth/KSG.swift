@@ -1,5 +1,5 @@
 import Foundation
 
-class Ghost {
-
+protocol Ghost {
+    func head() -> Data
 }
