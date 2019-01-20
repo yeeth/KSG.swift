@@ -188,7 +188,6 @@ class EthereumResearchGhost: Ghost {
                 return data
             }
 
-
             let o = ancestor(block: ancestors[logz[h - height - 1]][block]!, height: height)!
             cache[cachekey] = o
             return o
