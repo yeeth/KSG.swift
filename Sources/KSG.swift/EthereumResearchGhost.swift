@@ -125,10 +125,6 @@ class EthereumResearchGhost: Ghost {
         }
 
         for (k, v) in atHeight {
-            if totalVoteCount == 0.0 {
-                return k
-            }
-
             if v >= floor(totalVoteCount / 2.0) {
                 return k
             }
