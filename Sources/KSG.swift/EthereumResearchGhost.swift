@@ -243,7 +243,7 @@ class EthereumResearchGhost: Ghost {
             if fmod(Double(h), Double(2^i)) == 0 {
                 ancestors.insert([newHash.hashValue: parent], at: i)
             } else {
-                /*if let _ = ancestors[i][parent.hashValue] {*/
+//                if let _ = ancestors[i][parent.hashValue] {
 //                } else {
 //                    ancestors[i][parent.hashValue] = Data(count: 32)
 //                }
