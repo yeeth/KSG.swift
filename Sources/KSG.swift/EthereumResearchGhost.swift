@@ -9,20 +9,20 @@ class EthereumResearchGhost: Ghost {
     var maxKnownHeight = [0]
     var children = [Data: [Data]]()
 
-    var blocks = [Int: (Int, Data)]()
+    var blocks = [Data: (Int, Data)]()
 
     var logz = [0, 0]
 
     var cache = [Data: Data]()
     var heightToBytes = [Data]()
-    var ancestors = [[Int: Data]]()
+    var ancestors = [[Data: Data]]()
 
     init() {
 
-        blocks[(Data(capacity: 32)).hashValue] = (0, Data(capacity: 0))
+        blocks[(Data(capacity: 32))] = (0, Data(capacity: 0))
 
         for _ in 0..<16 {
-            ancestors.append([Data(capacity: 32).hashValue: Data(capacity: 32)])
+            ancestors.append([Data(capacity: 32): Data(capacity: 32)])
         }
 
         for i in 0..<10000 {
@@ -101,7 +101,7 @@ class EthereumResearchGhost: Ghost {
     }
 
     private func height(_ block: Data) -> Int {
-        if let b = blocks[block.hashValue] {
+        if let b = blocks[block] {
             return b.0
         }
 
@@ -174,7 +174,7 @@ class EthereumResearchGhost: Ghost {
     }
 
     private func ancestor(block: Data, height: Int) -> Data? {
-        if let h = blocks[block.hashValue]?.0 {
+        if let h = blocks[block]?.0 {
             if (height >= h) {
                 if (height > h) {
                     return nil
@@ -188,7 +188,7 @@ class EthereumResearchGhost: Ghost {
                 return data
             }
 
-            let o = ancestor(block: ancestors[logz[h - height - 1]][block.hashValue]!, height: height)
+            let o = ancestor(block: ancestors[logz[h - height - 1]][block]!, height: height)
             cache[cachekey] = o
             return o
         }
@@ -201,7 +201,7 @@ class EthereumResearchGhost: Ghost {
         var upcount = 0
 
         while height(head) > 0 && Double.random(in: 0.0...1.0) < LATENCY_FACTOR {
-            head = blocks[head.hashValue]!.1
+            head = blocks[head]!.1
             upcount += 1
         }
 
@@ -228,7 +228,7 @@ class EthereumResearchGhost: Ghost {
 
         let h = height(parent)
 
-        blocks[newHash.hashValue] = (h+1, parent)
+        blocks[newHash] = (h+1, parent)
         if let _ = children[parent] {} else {
             children[parent] = [Data]()
         }
@@ -237,13 +237,13 @@ class EthereumResearchGhost: Ghost {
 
         for i in 0..<16 {
             if fmod(Double(h), Double(2^i)) == 0 {
-                ancestors.insert([newHash.hashValue: parent], at: i)
+                ancestors.insert([newHash: parent], at: i)
             } else {
-//                if let _ = ancestors[i][parent.hashValue] {
-//                } else {
-//                    ancestors[i][parent.hashValue] = Data(count: 32)
-//                }
-                ancestors.insert([newHash.hashValue: ancestors[i][parent.hashValue]!], at: i)
+                if let _ = ancestors[i][parent] {
+                } else {
+                    ancestors[i][parent] = Data(count: 32)
+                }
+                ancestors.insert([newHash: ancestors[i][parent]!], at: i)
             }
         }
 
