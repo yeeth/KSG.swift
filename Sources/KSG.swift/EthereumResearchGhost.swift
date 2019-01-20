@@ -7,22 +7,22 @@ class EthereumResearchGhost: Ghost {
     let balances = Array(repeating: 1.0, count: 131072)
     var latestMessage = Array(repeating: Data(repeating: 0, count: 32), count: 131072)
     var maxKnownHeight = [0]
-    var children = [Data:[Data]]()
+    var children = [Data: [Data]]()
 
-    var blocks = [Data:(Int, Data)]()
+    var blocks = [Data: (Int, Data)]()
 
     var logz = [0, 0]
 
-    var cache = [Data:Data]()
+    var cache = [Data: Data]()
     var heightToBytes = [Data]()
-    var ancestors = [[Data:Data]]()
+    var ancestors = [[Data: Data]]()
 
     init() {
 
         blocks[Data(capacity: 32)] = (0, Data(capacity: 0))
 
         for _ in 0...15 {
-            ancestors.append([Data(capacity: 32):Data(capacity: 32)])
+            ancestors.append([Data(capacity: 32): Data(capacity: 32)])
         }
 
         for i in 0...9999 {
@@ -37,7 +37,7 @@ class EthereumResearchGhost: Ghost {
 
     func head() -> Data {
 
-        var latestVotes = [Data:Double]()
+        var latestVotes = [Data: Double]()
 
         for (i, balance) in balances.enumerated() {
             latestVotes[latestMessage[i]] = (latestVotes[latestMessage[i]] ?? 0.0) + balance
@@ -68,7 +68,7 @@ class EthereumResearchGhost: Ghost {
             } else if c.count == 1 {
                 head = c[0]
             } else {
-                var childVotes = [Data:Double]()
+                var childVotes = [Data: Double]()
                 for x in c {
                     childVotes[x] = 0.1
                 }
@@ -110,8 +110,8 @@ class EthereumResearchGhost: Ghost {
         latestMessage[validatorIndex] = block
     }
 
-    private func clearWinner(latestVotes: [Data:Double], height: Int) -> Data? {
-        var atHeight = [Data:Double]()
+    private func clearWinner(latestVotes: [Data: Double], height: Int) -> Data? {
+        var atHeight = [Data: Double]()
         var totalVoteCount = 0.0
 
         for (k, v) in latestVotes {
@@ -240,18 +240,17 @@ class EthereumResearchGhost: Ghost {
 
         for i in 0...15 {
             if h == 0 {
-                ancestors.insert([newHash:Data(count: 32)], at: i)
+                ancestors.insert([newHash: Data(count: 32)], at: i)
                 continue
             }
 
             if h % 2^i == 0 {
-                ancestors.insert([newHash:parent], at: i)
+                ancestors.insert([newHash: parent], at: i)
             } else {
-                ancestors.insert([newHash:ancestors[i][parent]!], at: i)
+                ancestors.insert([newHash: ancestors[i][parent]!], at: i)
             }
         }
 
         maxKnownHeight[0] = max(maxKnownHeight[0], h+1)
     }
 }
-
