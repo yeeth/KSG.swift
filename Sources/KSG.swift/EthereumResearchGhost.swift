@@ -55,12 +55,15 @@ class EthereumResearchGhost: Ghost {
 
             var step = Int(floor(Double(powerOfTwo(below: maxKnownHeight[0] - height)) / 2.0))
             while step > 0 {
-                if let possibleClearWinner = clearWinner(latestVotes: latestVotes, height: height - (height % step) + step) {
+                if let possibleClearWinner = clearWinner(
+                    latestVotes: latestVotes,
+                    height: height - Int(fmod(Double(height), Double(step))) + step
+                ) {
                     head = possibleClearWinner
                     break
                 }
 
-                let d = Double(step) / 2
+                let d = Double(step) / 2.0
                 step = Int(floor(d))
             }
 
@@ -118,14 +121,15 @@ class EthereumResearchGhost: Ghost {
                 atHeight[ancestor] = (atHeight[ancestor] ?? 0.0) + v
                 totalVoteCount += v
             }
+
         }
 
         for (k, v) in atHeight {
-            if totalVoteCount == 0 {
+            if totalVoteCount == 0.0 {
                 return k
             }
 
-            if v >= Double(totalVoteCount / 2) {
+            if v >= floor(totalVoteCount / 2.0) {
                 return k
             }
         }
@@ -230,8 +234,7 @@ class EthereumResearchGhost: Ghost {
         let h = height(parent)
 
         blocks[newHash.hashValue] = (h+1, parent)
-        if let _ = children[parent] {
-        } else {
+        if let _ = children[parent] {} else {
             children[parent] = [Data]()
         }
 
