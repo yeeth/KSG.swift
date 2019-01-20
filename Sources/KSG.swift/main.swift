@@ -9,9 +9,9 @@ import Foundation
 
 class EFG {
 
-    let NODE_COUNT = 10
-    let balances = Array(repeating: 1.0, count: 10)
-    var latestMessage = Array(repeating: Data(repeating: 0, count: 32), count: 10)
+    let NODE_COUNT = 131072
+    let balances = Array(repeating: 1.0, count: 131072)
+    var latestMessage = Array(repeating: Data(repeating: 0, count: 32), count: 131072)
     var maxKnownHeight = [0]
     var children = [Data:[Data]]()
 
@@ -60,7 +60,12 @@ class EFG {
                 return head
             }
 
-            var step = powerOfTwo(below: maxKnownHeight[0] - height) / 2
+            let power = powerOfTwo(below: maxKnownHeight[0] - height)
+            var step = 0
+            if power != 0 {
+                step = power / 2
+            }
+
             while step > 0 {
                 if let possibleClearWinner = clearWinner(latestVotes: latestVotes, height: height - (height % step) + step) {
                     head = possibleClearWinner
@@ -129,6 +134,10 @@ class EFG {
         }
 
         for (k, v) in atHeight {
+            if totalVoteCount == 0 {
+                return k
+            }
+
             if v >= Double(totalVoteCount / 2) {
                 return k
             }
@@ -246,8 +255,13 @@ class EFG {
         }
 
         children[parent]?.append(newHash)
-        for i in 0...16 {
-            if h % (2^i) == 0 {
+        for i in 0...1 {
+            if h == 0 {
+                ancestors.insert([newHash:Data(count: 32)], at: i)
+                continue
+            }
+
+            if h % 2^i == 0 {
                 ancestors.insert([newHash:parent], at: i)
             } else {
                 ancestors.insert([newHash:ancestors[i][parent]!], at: i)
@@ -269,6 +283,8 @@ for i in stride(from: 0, to: g.NODE_COUNT, by: 1024) {
         let phead = g.getPerturbedHead(h: head)
         g.addAttestations(block: phead, v: i % g.NODE_COUNT)
         g.addBlock(parent: phead)
-
+        let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+        print("Time elapsed: \(timeElapsed) s.")
+        break
     }
 }
