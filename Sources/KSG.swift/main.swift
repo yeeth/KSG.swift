@@ -3,11 +3,11 @@ import Foundation
 let g = EthereumResearchGhost()
 
 let startTime = CFAbsoluteTimeGetCurrent()
-var phead: Data = Data(capacity: 32)
 
 for i in stride(from: 0, to: 131072, by: 1024) {
     let head = g.head()
 
+    var phead: Data = Data(capacity: 32)
     for _ in i..<(i + 1024) {
         phead = g.getPerturbedHead(h: head)
         g.addAttestations(block: phead, v: Int(fmod(Double(i), Double(g.NODE_COUNT))))

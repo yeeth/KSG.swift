@@ -68,7 +68,7 @@ class EthereumResearchGhost: Ghost {
             }
 
             if step > 0 {
-                continue
+//                continue
             } else if c.count == 1 {
                 head = c[0]
             } else {
@@ -188,7 +188,8 @@ class EthereumResearchGhost: Ghost {
                 return data
             }
 
-            let o = ancestor(block: ancestors[logz[h - height - 1]][block]!, height: height)
+
+            let o = ancestor(block: ancestors[logz[h - height - 1]][block]!, height: height)!
             cache[cachekey] = o
             return o
         }
