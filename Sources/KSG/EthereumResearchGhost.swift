@@ -53,18 +53,17 @@ class EthereumResearchGhost: Ghost {
                 return head
             }
 
-            var step = Int(floor(Double(powerOfTwo(below: maxKnownHeight[0] - height)) / 2.0))
+            var step = powerOfTwo(below: maxKnownHeight[0] - height) / 2
             while step > 0 {
                 if let possibleClearWinner = clearWinner(
                     latestVotes: latestVotes,
-                    height: height - Int(fmod(Double(height), Double(step))) + step
+                    height: height - Int(height % step) + step
                 ) {
                     head = possibleClearWinner
                     break
                 }
 
-                let d = Double(step) / 2.0
-                step = Int(floor(d))
+                step /= 2
             }
 
             if step > 0 {
@@ -83,7 +82,10 @@ class EthereumResearchGhost: Ghost {
                     }
                 }
 
-                head = bestChild(votes: childVotes)!
+                guard let h = bestChild(votes: childVotes) else {
+                    return head
+                }
+                head = h
             }
 
             height = self.height(head)
@@ -142,6 +144,7 @@ class EthereumResearchGhost: Ghost {
             var zeroVotes = 0.0
             var oneVotes = 0.0
             var singleCandidate: Data?
+            var hasSingle = true
 
             for (candidate, votesForCandidate) in votes {
                 let candidateAsInt = candidate.withUnsafeBytes { (ptr: UnsafePointer<Int>) -> Int in
@@ -160,11 +163,14 @@ class EthereumResearchGhost: Ghost {
 
                 if singleCandidate == nil {
                     singleCandidate = candidate
+                    hasSingle = true
+                } else {
+                    hasSingle = false
                 }
             }
 
             bitmask = (bitmask * 2) + (oneVotes > zeroVotes ? 1 : 0)
-            if singleCandidate != nil {
+            if hasSingle {
                 return singleCandidate
             }
         }
@@ -188,7 +194,13 @@ class EthereumResearchGhost: Ghost {
                 return data
             }
 
-            let o = ancestor(block: ancestors[logz[h - height - 1]][block]!, height: height)!
+            guard let b = ancestors[logz[h - height - 1]][block] else {
+                return nil
+            }
+
+            guard let o = ancestor(block: b, height: height) else {
+                return nil
+            }
             cache[cachekey] = o
             return o
         }
@@ -217,7 +229,7 @@ class EthereumResearchGhost: Ghost {
     }
 
     func addAttestations(block: Data, v: Int) {
-        latestMessage.insert(block, at: v)
+        latestMessage[v] = block
     }
 
     func addBlock(parent: Data) {
@@ -236,7 +248,7 @@ class EthereumResearchGhost: Ghost {
         children[parent]?.append(newHash)
 
         for i in 0..<16 {
-            if fmod(Double(h), Double(2^i)) == 0 {
+            if (2^i) == 0 || h % (2^i) == 0 {
                 ancestors.insert([newHash: parent], at: i)
             } else {
                 if let _ = ancestors[i][parent] {
